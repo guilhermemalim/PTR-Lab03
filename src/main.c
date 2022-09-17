@@ -25,6 +25,8 @@ int contLinearizacao=0;
 int contRobo=0;
 double T = 0.5;
 
+double R = 0.3;
+
 //Semaforos para os Produtores
 sem_t ProduzRef, ProduzY, ProduzYm, ProduzYmLinha, ProduzV, ProduzX, ProduzU, Print_Mostra;
 
@@ -33,7 +35,7 @@ sem_t ConsomeRef, ConsomeY, ConsomeYm, ConsomeYmLinha, ConsomeV, ConsomeX, Conso
 
 
 //Gerar Ref
-void Ref(void*args)
+void* Ref(void*args)
 {
     clock_t start;
     double dif;
@@ -53,7 +55,7 @@ void Ref(void*args)
     }
 }
 
-void ModeloRef(void*args)
+void* ModeloRef(void*args)
 {
     clock_t start;
     double dif;
@@ -81,7 +83,7 @@ void ModeloRef(void*args)
 }
 
 //Bloco Controle
-void Controle(void*args)
+void* Controle(void*args)
 {
     clock_t start;
     double dif;
@@ -105,7 +107,7 @@ void Controle(void*args)
     }
 }
 
-void Linear(void*args)
+void* Linear(void*args)
 {
     clock_t start;
     double dif;
@@ -127,7 +129,7 @@ void Linear(void*args)
     }
 }
 
-void Robo(void*args)
+void* Robo(void*args)
 {
     clock_t start;
     double dif;
@@ -147,7 +149,7 @@ void Robo(void*args)
             bufferX=RoboXt(XtLinha, auxBuffer, t*T);
             
             matrix_free(bufferY);
-            bufferY=RoboYt(bufferX, R);
+            bufferY = RoboYt(bufferX, R);
         sem_post(&ProduzU);
         sem_post(&ConsomeX);
         sem_post(&ConsomeY);
@@ -162,6 +164,56 @@ void Robo(void*args)
 int main() {
 	mutexes_init();
 
+    //Iniciando semaphoros produtores
+
+    sem_init(&Print_Mostra,0,0);
+    sem_init(&ProduzRef, 0,  1);
+    sem_init(&ProduzU, 0,  1);
+    sem_init(&ProduzV, 0,  1);
+    sem_init(&ProduzX, 0,  0);
+    sem_init(&ProduzY, 0,  0);
+    sem_init(&ProduzYm, 0,  1);
+    sem_init(&ProduzYmLinha, 0,  1);
+
+    //Iniciando semaphoros Consumidores
+    sem_init(&ConsomeRef, 0,  0);
+    sem_init(&ConsomeU, 0,  0);
+    sem_init(&ConsomeV, 0,  0);
+    sem_init(&ConsomeX, 0,  1);
+    sem_init(&ConsomeY, 0,  1);
+    sem_init(&ConsomeYm, 0,  0);
+    sem_init(&ConsomeYmLinha, 0,  0);
+
+    //iniciando as Matrixes do Buffer que serão responsaveis por comunicar os blocos
+    double aux[11] = {0,0,0,0,0,0,0,0,0,0,0};
+    bufferV = matrix_zeros(2,1);
+    bufferU = matrix_zeros(2,1);
+    bufferY = matrix_zeros(2,1);
+    bufferX = matrix_zeros(3,1);
+    bufferRef = matrix_zeros(2,1);
+    bufferYm = matrix_zeros(2,1);
+    bufferYmLinha = matrix_zeros(2,1);
+    XtLinha = matrix_zeros(3 , 1);
+
+
+    //Nomeando as Threads
+    pthread_t TRef, TModeloRef, TControle, TLinearizacao, TRobo, Print_mostra;
+
+    //Criando as Threads
+    pthread_create(&TRef, NULL, Ref, NULL);
+    pthread_create(&TModeloRef, NULL, ModeloRef, NULL);
+    pthread_create(&TControle, NULL, Controle, NULL);
+    pthread_create(&TLinearizacao, NULL, Linear, NULL); 
+    pthread_create(&TRobo, NULL, Robo, NULL);
+   // pthread_create(&Print_mostra, NULL, imprimi, NULL);
+
+
+    //Finalizando as Threads
+    pthread_join(TRef, NULL);
+    pthread_join(TModeloRef, NULL);
+    pthread_join(TControle, NULL);
+    pthread_join(TLinearizacao, NULL);
+    pthread_join(TRobo, NULL);
 
 	mutexes_destroy();
     return 0;

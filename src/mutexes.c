@@ -13,7 +13,7 @@ static Matrix* Ym;
 static Matrix* Ymdot;
 static Matrix* V;
 static Matrix* U;
-static Matrix* X;
+// static Matrix* X;
 
 static pthread_mutex_t mutexRef     = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexY       = PTHREAD_MUTEX_INITIALIZER;
