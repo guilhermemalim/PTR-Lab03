@@ -5,7 +5,7 @@
 
 #include "Matrix.h"
 
-Matrix* definedRef(double t, int selec);
+Matrix* defineRef(double t);
 Matrix* degrau(int i);
 Matrix* y_m(Matrix* ref, Matrix* aux_Ref);
 Matrix* ModeloRefYm(Matrix* YmLinha, Matrix* YmLinhaAntigo, double t);

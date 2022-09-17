@@ -2,26 +2,25 @@
 #include <string.h>
 #include <stdlib.h> 
 #include <math.h>
+
+#include "Parametros.h"
 #include "Matrix.h"
 #include "blocos.h"
 
 
-Matrix* definedRef(double t, int selec){
-    double d = 0; //Seleciona para gerar dados consideradno o instante ou apenas a velocidade angular
-    Matrix* c = matriz_iniciada(Ms("INICIADA"),2,1);
+Matrix* defineRef(double t){
+    Matrix* c = matrix_zeros(2,1);
 
-    if(selec==0) d = 1;
-    else d =t;
     if(t>=0 && t<2*M_PI ){
 
-        VALUES(c,0,0)=0.5 - 0.5*cos(d);
-        VALUES(c,1,0) = 0.5*sin(d);
+        VALUES(c,0,0)=0.5 - 0.5*cos(t);
+        VALUES(c,1,0) = 0.5*sin(t);
     
 
     }else if(t>=2*M_PI && t<4*M_PI){
 
-        VALUES(c,0,0)= -0.5 + 0.5*cos(d);
-        VALUES(c,1,0) = -0.5*sin(d);
+        VALUES(c,0,0)= -0.5 + 0.5*cos(t);
+        VALUES(c,1,0) = -0.5*sin(t);
        
 
     }else{
@@ -37,69 +36,107 @@ Matrix* definedRef(double t, int selec){
 
 Matrix* y_m(Matrix* ref, Matrix* Ym){
 
-  Matrix* ymLinha = matriz_iniciada(Ms("Ym/"),2,1);
-  double aux[2] = { Alpha1*(VALUES(ref,0,0)-VALUES(Ym,0,0)), Alpha2*(VALUES(ref,1,0)-VALUES(Ym,1,0))};
-  matrix_putValues(ymLinha, aux);
-  return ymLinha;
-
+    Matrix* ym_ponto = matrix_zeros(2,1);
+    
+    VALUES(ym_ponto, 0, 0) = ALPHA1*(matrix_get_value(ref,0,0)-matrix_get_value(Ym,0,0)); // ymx_ponto = alpha1(X_ref - y_mx)
+    VALUES(ym_ponto, 1, 0) = ALPHA2*(matrix_get_value(ref,1,0)-matrix_get_value(Ym,1,0)); // ymy_ponto = alpha2(Y_ref)
+    
+    return ym_ponto;
 }
 
-Matrix* ModeloRefYm(Matrix* YmLinha, Matrix* YmLinhaAntigo, double t)
+Matrix* ModeloRefYm(Matrix* ym_ponto, Matrix* ym_pontoAntigo, double t)
 {
-    Matrix* ym = matriz_iniciada(Ms("Ym"),2,1);
-    double aux[2] = {(t-(t-0.12))*(VALUES(YmLinha,0,0)+VALUES(YmLinhaAntigo,0,0))/2, (t-(t-0.12))*(VALUES(YmLinha,1,0)+VALUES(YmLinhaAntigo,1,0))/2};
-    matrix_putValues(ym, aux);
+    Matrix* ym = matrix_zeros(2,1);
+
+    VALUES(ym, 0, 0) = (0.12) * (VALUES(ym_ponto, 0, 0) + VALUES(ym_pontoAntigo, 0, 0)) / 2;
+    VALUES(ym, 1, 0) = (0.12) * (VALUES(ym_ponto, 1, 0) + VALUES(ym_pontoAntigo, 1, 0)) / 2;
+
     return ym;
 }
 
 
-Matrix* ControleBloco(Matrix* YmLinha, Matrix* Ym, Matrix* Yt)
+Matrix* ControleBloco(Matrix* ym_ponto, Matrix* Ym, Matrix* Yt)
 {
-    Matrix* Vt = matriz_iniciada(Ms("Vt"),2,1);
-    double aux[2] = {VALUES(YmLinha,0,0) +Alpha1*(VALUES(Ym,0,0) - VALUES(Yt,0,0)), VALUES(YmLinha,1,0) +Alpha2*(VALUES(Ym,1,0) - VALUES(Yt,1,0))};
-    matrix_putValues(Vt,aux);
+    Matrix* Vt = matrix_zeros(2,1);
+    VALUES(Vt, 0, 0) = VALUES(ym_ponto, 0, 0) + ALPHA1 * (VALUES(Ym, 0, 0) - VALUES(Yt, 0, 0));
+    VALUES(Vt, 1, 0) = VALUES(ym_ponto, 1, 0) + ALPHA2 * (VALUES(Ym, 1, 0) - VALUES(Yt, 1, 0));
+
     return Vt;
 }
 
 // Bloco de Linearização
 Matrix* Linearizacao(Matrix* xt, Matrix* vt, double R)
 {
-    Matrix* L=matriz_iniciada(Ms("L"),2,2);
-    double LTerms[4] = {cos(VALUES(xt,2,0)), -R*sin (VALUES(xt,2,0)), sin(VALUES(xt,2,0)), R*cos(VALUES(xt,2,0))};
-    matrix_putValues(L, LTerms);
-    Matrix* LInvers=matrix_invers(L);
-    return soma_multi(LInvers,vt,Ms("multi"));
+    Matrix* L = matrix_zeros(2,2);
+    
+    VALUES(L, 0, 0) = cos(VALUES(xt,2,0));
+    VALUES(L, 0, 1) = -R*sin (VALUES(xt,2,0));
+    VALUES(L, 1, 0) = sin(VALUES(xt, 2, 0));
+    VALUES(L, 1, 1) = R * cos(VALUES(xt, 2, 0));
+
+    MResponse response = matrix_inversa(L);
+    Matrix* LInvers = response.m;
+    
+    MResponse response1 = matrix_mul(LInvers,vt);
+    Matrix* linearizado = response1.m;
+    
+    return linearizado;
 }
 
 //Bloco robo
-
 Matrix* RoboXtLinha(Matrix* xt, Matrix* ut)
 {
-    Matrix* Aux=matriz_iniciada(Ms("Aux"),3,2);//criei uma 2x2
-    double AuxTerms[6] = {cos(VALUES(xt,2,0)), 0, sin(VALUES(xt,2,0)) , 0, 0, 1};
-    matrix_putValues(Aux,AuxTerms);//coloquei os valores do vetor na matrix 2x2
-    return soma_multi(Aux,ut,Ms("xdot"));//retornei a multiplicação
+    Matrix* Aux = matrix_zeros(3,2);
+
+    /*
+     * @brief geração da Matriz que multiplica u(t) no bloco do Robô 
+     * 
+     * Aux = [cos(x_3) 0;
+     *        sin(x_3) 0;  
+     *            0    1]
+     */
+
+    VALUES(Aux, 0, 0) = cos(VALUES(xt, 2, 0));
+    VALUES(Aux, 0, 1) = 0;
+    VALUES(Aux, 1, 0) = sin(VALUES(xt, 2, 0));
+    VALUES(Aux, 1, 1) = 0;
+    VALUES(Aux, 2, 0) = 0;
+    VALUES(Aux, 2, 1) = 1;
+
+
+    MResponse response = matrix_mul(Aux,ut);//retornei a multiplicação
+    
+    Matrix* xt_linha = response.m;
+
+    return xt_linha;
 }
 
 Matrix* RoboXt(Matrix* XtLinha, Matrix* XtLinhaAntigo, double t)
 {
-    Matrix* Xt = matriz_iniciada(Ms("Xt"),3,1);
-    double aux[3] = {(t-(t-0.12))*(VALUES(XtLinha,0,0)+VALUES(XtLinhaAntigo,0,0)/2), (t-(t-0.12))*(VALUES(XtLinha,1,0)+VALUES(XtLinhaAntigo,1,0))/2,
-     (t-(t-0.12))*(VALUES(XtLinha,2,0)+VALUES(XtLinhaAntigo,2,0))/2};
-    matrix_putValues(Xt, aux);
+    Matrix* Xt = matrix_zeros(3,1);
+
+    VALUES(Xt, 0, 0) = (0.12)*(VALUES(XtLinha,0,0)+VALUES(XtLinhaAntigo,0,0)/2);
+    VALUES(Xt, 1, 0) = (0.12)*(VALUES(XtLinha,1,0)+VALUES(XtLinhaAntigo,1,0))/2;
+    VALUES(Xt, 2, 0) = (0.12)*(VALUES(XtLinha,2,0)+VALUES(XtLinhaAntigo,2,0))/2;
+    
     return Xt;
 }
 
 Matrix* RoboYt(Matrix* xt, double R)
 {
-    Matrix* Aux=matriz_iniciada(Ms("Aux"),2,3);//criei uma 2x3
-    double AuxTerms[6] = {1, 0, 0, 0, 1, 0};
-    matrix_putValues(Aux, AuxTerms);
-    Matrix* Aux2=matriz_iniciada(Ms("Aux2"), 2, 1);
-    double AuxTerms2[2] = {R*cos(VALUES(xt,2,0)),R*sin(VALUES(xt,2,0))};
-    matrix_putValues(Aux2, AuxTerms2);
-    Aux=soma_multi(Aux, xt,Ms("multi"));
+    Matrix* Aux = matrix_zeros(2,3);
+    VALUES(Aux, 0, 0) = 1;
+    VALUES(Aux, 1, 1) = 1;
+    
+    Matrix* Aux2 = matrix_zeros(2, 1);
+    VALUES(Aux2, 0, 0) = R*cos(VALUES(xt,2,0));
+    VALUES(Aux2, 1, 0) = R*sin(VALUES(xt,2,0));
+
+    MResponse response = matrix_mul(Aux, xt);
+    Aux = response.m;
+    
     VALUES(Aux,0,0) = VALUES(Aux,0,0) + VALUES(Aux2,0,0);
     VALUES(Aux,1,0) = VALUES(Aux,1,0) + VALUES(Aux2,1,0);
+    
     return Aux;
 }

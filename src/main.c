@@ -12,12 +12,13 @@
 #include "DString.h"
 #include "Matrix.h"
 
+#include "blocos.h"
 #include "mutexes.h"
 
-Matrix* bufferV, bufferU, bufferY, bufferX, XtLinha, bufferRef, bufferYm, bufferYmLinha, auxBuffer, auxBuffer2;
+Matrix *bufferV, *bufferU, *bufferY, *bufferX, *XtLinha, *bufferRef, *bufferYm, *bufferYmLinha, *auxBuffer, *auxBuffer2;
 
 double t = 0;
-int contRef120=0;
+int contRef=0;
 int contModeloRef=0;
 int contControle=0;
 int contLinearizacao=0;
@@ -32,7 +33,7 @@ sem_t ConsomeRef, ConsomeY, ConsomeYm, ConsomeYmLinha, ConsomeV, ConsomeX, Conso
 
 
 //Gerar Ref
-void* Ref(void*args)
+void Ref(void*args)
 {
     clock_t start;
     double dif;
@@ -41,18 +42,18 @@ void* Ref(void*args)
         start=clock();
         sem_wait(&ProduzRef);
             matrix_free(bufferRef);
-            bufferRef=calc_ref(t*T,1);
+            bufferRef=defineRef(t);  //verificar t = t*T ()
             t=t+0.12;
             //printf("%.4f \n",MVAL(bufferRef,0,0));
         sem_post(&ConsomeRef);
-        //dif=difftime(clock(), start);
+        dif=difftime(clock(), start);
         //JitterRef[contRef]=TEMPO_REF - dif/1000.0;
         usleep(TEMPO_REF_MS-dif);
         contRef++;
     }
 }
 
-void* ModeloRef(void*args)
+void ModeloRef(void*args)
 {
     clock_t start;
     double dif;
@@ -62,15 +63,17 @@ void* ModeloRef(void*args)
         sem_wait(&ConsomeRef);
         sem_wait(&ProduzYm);
         sem_wait(&ProduzYmLinha);
-            auxBuffer=bufferYmLinha;
-            bufferYmLinha=y_m(bufferRef,bufferYm);
-            bufferYm=ModeloRefYm(bufferYmLinha, auxBuffer, t*T);
+            auxBuffer = matrix_copy(bufferYmLinha);
+            matrix_free(bufferYmLinha);
+
+            bufferYmLinha = y_m(bufferRef,bufferYm);
+            bufferYm = ModeloRefYm(bufferYmLinha, auxBuffer, t*T);
 
         sem_post(&ProduzRef);
         sem_post(&ConsomeYm);
         sem_post(&ConsomeYmLinha);
        
-        // dif=difftime(clock(),start);
+        dif=difftime(clock(),start);
         //JitterModeloRef[contModeloRef]=TEMPO__MODELO_REF - dif/1000.0;
         usleep(TEMPO_MODELO_REF_MS - dif);
         contModeloRef++;
@@ -78,7 +81,7 @@ void* ModeloRef(void*args)
 }
 
 //Bloco Controle
-void* Controle(void*args)
+void Controle(void*args)
 {
     clock_t start;
     double dif;
@@ -89,19 +92,20 @@ void* Controle(void*args)
         sem_wait(&ConsomeYm);
         sem_wait(&ConsomeYmLinha);
         sem_wait(&ProduzV);
+            matrix_free(bufferV);
             bufferV=ControleBloco(bufferYmLinha, bufferYm, bufferY);
         sem_post(&ProduzYm);
         sem_post(&ProduzYmLinha);
         sem_post(&ProduzY);
         sem_post(&ConsomeV);
-        // dif=difftime(clock(),start);
+        dif=difftime(clock(),start);
         // JitterControle[contControle]=TEMPO_CONTROLE-dif/1000.0;
         usleep(TEMPO_CONTROLE_MS-dif);
         contControle++;
     }
 }
 
-void* Linear(void*args)
+void Linear(void*args)
 {
     clock_t start;
     double dif;
@@ -111,18 +115,19 @@ void* Linear(void*args)
         sem_wait(&ConsomeX);
         sem_wait(&ConsomeV);
         sem_wait(&ProduzU);
+            matrix_free(bufferU);
             bufferU=Linearizacao(bufferX, bufferV, R);
         sem_post(&ProduzX);
         sem_post(&ProduzV);
         sem_post(&ConsomeU);
-        // dif= difftime(clock(),start);
+        dif= difftime(clock(),start);
         // JitterLinearizacao[contLinearizacao]=TEMPO_LINEARIZACAO -dif/1000.0;
         usleep(TEMPO_LINEARIZACAO_MS-dif);
         contLinearizacao++;
     }
 }
 
-void* Robo(void*args)
+void Robo(void*args)
 {
     clock_t start;
     double dif;
@@ -132,15 +137,21 @@ void* Robo(void*args)
         sem_wait(&ConsomeU);
         sem_wait(&ProduzX);
         sem_wait(&ProduzY);
-            printf("%.2lf, %lf, %lf, %lf\n", t-0.12 ,MVAL(bufferX,0,0) ,MVAL(bufferX,1,0),MVAL(bufferX,2,0));
-            auxBuffer2=XtLinha;
+            printf("%.2lf, %lf, %lf, %lf\n", t-0.12 ,matrix_get_value(bufferX,0,0) ,matrix_get_value(bufferX,1,0),matrix_get_value(bufferX,2,0));
+            auxBuffer2 = matrix_copy(XtLinha);
+            
+            matrix_free(XtLinha);
             XtLinha=RoboXtLinha(bufferX, bufferU);
+            
+            matrix_free(bufferX);
             bufferX=RoboXt(XtLinha, auxBuffer, t*T);
+            
+            matrix_free(bufferY);
             bufferY=RoboYt(bufferX, R);
         sem_post(&ProduzU);
         sem_post(&ConsomeX);
         sem_post(&ConsomeY);
-        // dif=difftime(clock(),start);
+        dif=difftime(clock(),start);
         // JitterRobo[contRobo]=TEMPO_ROBO - dif/1000.0;
         usleep(TEMPO_ROBO_MS-dif);
         contRobo++;

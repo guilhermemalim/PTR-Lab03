@@ -11,9 +11,8 @@ Makefile:36: pipe: No error
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
- 
 
-# Make data base, printed on Sat Sep 17 11:00:27 2022
+# Make data base, printed on Sat Sep 17 16:14:48 2022
 
 # Variables
 
@@ -250,8 +249,8 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 142 Stepping 11, GenuineIntel
 
 # Directories
 
-# src (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3/src, mtime 1663426788): No files, no impossibilities so far.
-# . (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3, mtime 1663426788): 10 files, no impossibilities.
+# src (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3/src, mtime 1663443616): No files, no impossibilities so far.
+# . (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3, mtime 1663445330): 10 files, no impossibilities.
 
 # 10 files, no impossibilities in 2 directories.
 
@@ -267,8 +266,7 @@ obj/%.o: src/%.c
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-30 0 
-0:55:35
+#  Last modified 2022-06-30 00:55:35
 #  File has been updated.
 #  Successfully updated.
 
@@ -329,12 +327,12 @@ run:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 19 / storage = 126 B / avg = 6 B
-# current buf: size = 8174 B / used = 126 B / count = 19 / avg = 6 B
+# strcache buffers: 1 (0) / strings = 19 / storage = 119 B / avg = 6 B
+# current buf: size = 8174 B / used = 119 B / count = 19 / avg = 6 B
 
 # strcache performance: lookups = 32 / hit rate = 40%
 # hash-table stats:
 # Load=19/8192=0%, Rehash=0, Collisions=0/32=0%
-# Finished Make data base on Sat Sep 17 11:00:27 2022
+# Finished Make data base on Sat Sep 17 16:14:48 2022
 
  

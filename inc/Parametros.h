@@ -21,4 +21,6 @@ const int TEMPO_LINEARIZACAO_MS = TEMPO_LINEARIZACAO*1000;
 const int TEMPO_ROBO = 10;
 const int TEMPO_ROBO_MS = TEMPO_ROBO*1000;
 
+const double R = 0.6/2;
+
 #endif
