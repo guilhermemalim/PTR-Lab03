@@ -1,0 +1,10 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "files.associations": {
+        "integral.h": "c",
+        "dstring.h": "c",
+        "matrix.h": "c",
+        "time.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
+}
