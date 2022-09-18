@@ -371,9 +371,11 @@ MResponse matrix_inversa(Matrix *m) {
     for (int i = 0; i < nlins; i++) {
         for (int j = 0; j < ncols; j++) {
             aux = matrix_get_cofactor(m, i, j);
+            if ((i+j)%2 == 0)
+                sign = 1;
+            else sign = -1;
             VALUES(m1, i, j) = sign * matrix_det(aux);
 
-            sign = -sign;
             matrix_free(aux);
         }
     }

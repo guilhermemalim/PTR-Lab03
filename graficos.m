@@ -29,6 +29,10 @@ plot(ref_x, ref_y);
 title('ref_x, ref_y');
 
 figure;
+plot(Ym_x, Ym_y);
+title('Ymx', 'Ymy');
+
+figure;
 plot(X_x, t);
 title('Xc, t');
 
@@ -47,8 +51,8 @@ title('Xc, Yc');
 %%
 mat = csvread("out.txt"); 
 x = mat(:,1);
-y2 = mat(:,6);
-y1= mat(:,7);
+y2 = mat(:,2);
+y1= mat(:,3);
 plot(y2,y1);
 title('Grafico de (Xc(t),yc(t)) - Taxa de amostragem: 0.5');
 legend('','','') ;
