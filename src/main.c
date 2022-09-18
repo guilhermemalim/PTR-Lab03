@@ -13,8 +13,10 @@
 
 #include "mutexes.h"
 
-#include "ref.h"
-#include "modelo_ref.h"
+// #include "ref.h"
+// #include "modelo_ref.h"
+
+#include "threads.h"
 
 int main() {
 	mutexes_init();
@@ -25,19 +27,19 @@ int main() {
 
     //Criando as Threads
     pthread_create(&TRef, NULL, ref_thread, NULL);
-    // pthread_create(&TModeloRef, NULL, modelo_ref_thread, NULL);
-    // pthread_create(&TControle, NULL, Controle, NULL);
-    // pthread_create(&TLinearizacao, NULL, Linear, NULL); 
-    // pthread_create(&TRobo, NULL, Robo, NULL);
+    pthread_create(&TModeloRef, NULL, modelo_ref_thread, NULL);
+    pthread_create(&TControle, NULL, controle_thread, NULL);
+    pthread_create(&TLinearizacao, NULL, linearizacao_thread, NULL); 
+    pthread_create(&TRobo, NULL, robo_thread, NULL);
    // pthread_create(&Print_mostra, NULL, imprimi, NULL);
 
 
     //Finalizando as Threads
     pthread_join(TRef, NULL);
-    // pthread_join(TModeloRef, NULL);
-    // pthread_join(TControle, NULL);
-    // pthread_join(TLinearizacao, NULL);
-    // pthread_join(TRobo, NULL);
+    pthread_join(TModeloRef, NULL);
+    pthread_join(TControle, NULL);
+    pthread_join(TLinearizacao, NULL);
+    pthread_join(TRobo, NULL);
 
     printf("fim do programa\n");
 

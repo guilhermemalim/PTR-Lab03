@@ -5,7 +5,8 @@
         "dstring.h": "c",
         "matrix.h": "c",
         "time.h": "c",
-        "parametros.h": "c"
+        "parametros.h": "c",
+        "ref.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

@@ -77,7 +77,8 @@ void mutexes_setY(Matrix *y) {
 void mutexes_getY(Matrix *y) {
     if(y == NULL) return;
     pthread_mutex_lock(&mutexY);
-        y = Y;
+        matrix_copy_values(y, Y);
+        // y = Y;
     pthread_mutex_unlock(&mutexY);
 }
 
@@ -88,12 +89,14 @@ void mutexes_setYm(Matrix *ym) {
         // Ym = matrix_copy(ym);
         // Ym = ym;
         matrix_copy_values(Ym, ym);
-    pthread_mutex_lock(&mutexYm);
+    pthread_mutex_unlock(&mutexYm);
 }
 void mutexes_getYm(Matrix *ym) {
+    // if (ym == NULL) return;
     pthread_mutex_lock(&mutexYm);
-        ym = Ym;
-    pthread_mutex_lock(&mutexYm);
+        // ym = Ym;
+        matrix_copy_values(ym, Ym);
+    pthread_mutex_unlock(&mutexYm);
 }
 void mutexes_setYmdot(Matrix *ymponto) {
     pthread_mutex_lock(&mutexYmponto);
@@ -104,9 +107,55 @@ void mutexes_setYmdot(Matrix *ymponto) {
 }
 void mutexes_getYmdot(Matrix *ymponto) {
     pthread_mutex_lock(&mutexYmponto);
-        ymponto = Ymponto;
+        matrix_copy_values(ymponto, Ymponto);
+        // ymponto = Ymponto;
     pthread_mutex_unlock(&mutexYmponto);
 }
 
+void mutexes_setV(Matrix *v)
+{
+    pthread_mutex_lock(&mutexV);
+        matrix_copy_values(V, v);
+    pthread_mutex_unlock(&mutexV);
+}
 
+void mutexes_getV(Matrix *v)
+{
+    if (v == NULL) return;
+    pthread_mutex_lock(&mutexV);
+        matrix_copy_values(v, V);
+    pthread_mutex_unlock(&mutexV);
+}
+
+void mutexes_setU(Matrix *u)
+{
+    pthread_mutex_lock(&mutexU);
+        matrix_copy_values(U, u);
+    pthread_mutex_unlock(&mutexU);
+}
+
+void mutexes_getU(Matrix *u)
+{
+    if (u == NULL)
+        return;
+    pthread_mutex_lock(&mutexU);
+        matrix_copy_values(u, U);
+    pthread_mutex_unlock(&mutexU);
+}
+
+void mutexes_setX(Matrix *x)
+{
+    pthread_mutex_lock(&mutexX);
+        matrix_copy_values(X, x);
+    pthread_mutex_unlock(&mutexX);
+}
+
+void mutexes_getX(Matrix *x)
+{
+    if (x == NULL)
+        return;
+    pthread_mutex_lock(&mutexX);
+        matrix_copy_values(x, X);
+    pthread_mutex_unlock(&mutexX);
+}
 
