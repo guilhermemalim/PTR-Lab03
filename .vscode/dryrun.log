@@ -1,0 +1,10 @@
+make.exe --dry-run --keep-going --print-directory
+make: Entering directory 'c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake'
+make: Nothing to be done for 'all'.
+make: Leaving directory 'c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake'
+ 
+process_begin: CreateProcess(NULL, basename c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake, ...) failed.
+Makefile:23: pipe: No error
+process_begin: CreateProcess(NULL, basename c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake, ...) failed.
+Makefile:36: pipe: No error
+
