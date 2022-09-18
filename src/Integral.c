@@ -4,6 +4,9 @@ double _area_trapezio(double a, double b, double h) {
     return (a+b)*h / 2;
 }
 
+// df = (b - a)/h
+// (df*h + 2*b)/2
+
 // Utiliza o método de soma de trapézio
 double integrate(F_integravel f, double a, double b)  {
     double delta = DELTA_0;

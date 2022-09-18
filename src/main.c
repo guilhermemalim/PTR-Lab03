@@ -31,7 +31,7 @@ int main() {
     pthread_create(&TControle, NULL, controle_thread, NULL);
     pthread_create(&TLinearizacao, NULL, linearizacao_thread, NULL); 
     pthread_create(&TRobo, NULL, robo_thread, NULL);
-   // pthread_create(&Print_mostra, NULL, imprimi, NULL);
+    pthread_create(&Print_mostra, NULL, print_thread, NULL);
 
 
     //Finalizando as Threads
@@ -40,8 +40,9 @@ int main() {
     pthread_join(TControle, NULL);
     pthread_join(TLinearizacao, NULL);
     pthread_join(TRobo, NULL);
+    pthread_join(Print_mostra, NULL);
 
-    printf("fim do programa\n");
+    // printf("fim do programa\n");
 
 	mutexes_destroy();
 

@@ -40,3 +40,5 @@ void calc_y(Matrix* Y, Matrix* X, double R);
 
 void *robo_thread(void *args);
 
+void *print_thread(void *args);
+

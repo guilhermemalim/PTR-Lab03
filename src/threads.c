@@ -66,22 +66,8 @@ void *ref_thread(void *args) {
         mutexes_getYmdot(Ymponto);
         mutexes_getX(X);
         mutexes_getY(Y);
-        // matrix_free(ref);
         
         calc_ref(ref, t);
-
-        printf("%lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf\n", 
-            t, 
-            matrix_get_value(ref, 0, 0)    , matrix_get_value(ref, 1, 0),
-            matrix_get_value(Ymponto, 0, 0), matrix_get_value(Ymponto, 1, 0),
-            matrix_get_value(Ym, 0, 0)     , matrix_get_value(Ym, 1, 0),
-            matrix_get_value(Ym, 0, 0)     , matrix_get_value(Ym, 1, 0));
-
-        // printf("%lf, %lf, %lf, %lf\n", 
-        //     t, 
-        //     matrix_get_value(X, 0, 0),
-        //     matrix_get_value(X, 1, 0),
-        //     matrix_get_value(X, 2, 0));
 
         mutexes_setRef(ref);
 
@@ -102,8 +88,6 @@ void *ref_thread(void *args) {
 }
 
 
-double passo = 0.12;
-
 void calc_ymponto(Matrix* ym_ponto, Matrix* ref, Matrix* Ym) {
     
     VALUES(ym_ponto, 0, 0) = alpha1*(matrix_get_value(ref,0,0)-matrix_get_value(Ym,0,0)); // ymx_ponto = alpha1(X_ref - y_mx)
@@ -114,8 +98,8 @@ void calc_ymponto(Matrix* ym_ponto, Matrix* ref, Matrix* Ym) {
 // aqui eu mudei da integral para isso, verificar resultados e retornar
 void calc_ym(Matrix* ym, Matrix* ym_ponto, Matrix* ym_ponto_antigo)
 {
-    VALUES(ym, 0, 0) +=  (matrix_get_value(ym_ponto, 0, 0));
-    VALUES(ym, 1, 0) +=  (matrix_get_value(ym_ponto, 1, 0));
+    VALUES(ym, 0, 0) +=  (matrix_get_value(ym_ponto, 0, 0)*TEMPO_MODELO_REF/1000 + matrix_get_value(ym, 0, 0)) / 2.0;
+    VALUES(ym, 1, 0) +=  (matrix_get_value(ym_ponto, 1, 0)*TEMPO_MODELO_REF/1000 + matrix_get_value(ym, 1, 0)) / 2.0;
     // printf("ym: %lf\n", matrix_get_value(ym, 0, 0));
 }
 
@@ -309,9 +293,9 @@ void calc_xdot(Matrix* Xponto, Matrix* X, Matrix* U) {
 // avaliar processo de integração
 void calc_x(Matrix* X, Matrix* Xdot)
 {
-    VALUES(X, 0, 0) += matrix_get_value(Xdot,0,0);
-    VALUES(X, 1, 0) += matrix_get_value(Xdot,1,0);
-    VALUES(X, 2, 0) += matrix_get_value(Xdot,2,0);
+    VALUES(X, 0, 0) += (TEMPO_ROBO * matrix_get_value(Xdot,0,0));
+    VALUES(X, 1, 0) += (TEMPO_ROBO * matrix_get_value(Xdot,1,0));
+    VALUES(X, 2, 0) += (TEMPO_ROBO * matrix_get_value(Xdot,2,0));
 }
 
 void calc_y(Matrix* Y, Matrix* X, double R)
@@ -377,3 +361,65 @@ void *robo_thread(void *args) {
     return 0;
 }
 
+
+void *print_thread(void *args) {
+    double t = 0;       //tempo calculado
+    double tm = 0;      //tempo medido
+    double T = 30;      //milissegundos
+    struct timespec ts1, ts2, ts3 = {0};
+    
+    Matrix* Ref      = matrix_zeros(2,1);
+    Matrix* Y        = matrix_zeros(2,1);
+    Matrix* Ym       = matrix_zeros(2,1);
+    Matrix* Ymponto  = matrix_zeros(2,1);
+    Matrix* V        = matrix_zeros(2,1);
+    Matrix* U        = matrix_zeros(2,1);
+    Matrix* X        = matrix_zeros(3,1);
+
+
+    while(t <= TEMPO_MAX) {
+        clock_gettime(CLOCK_REALTIME, &ts1);
+        tm = 1000000 * ts1.tv_nsec - tm;
+        t = t + T;
+
+        mutexes_getRef(Ref);
+        mutexes_getYmdot(Ymponto);
+        mutexes_getYm(Ym);
+        mutexes_getV(V);
+        mutexes_getU(U);
+        mutexes_getX(X);
+        mutexes_getY(Y);
+
+        // printf("%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", 
+        //     t, 
+        //     matrix_get_value(Ref, 0, 0)     , matrix_get_value(Ref, 1, 0),
+        //     matrix_get_value(Ymponto, 0, 0) , matrix_get_value(Ymponto, 1, 0),
+        //     matrix_get_value(Ym, 0, 0)      , matrix_get_value(Ym, 1, 0),
+        //     matrix_get_value(V, 0, 0)       , matrix_get_value(V, 1, 0),
+        //     matrix_get_value(U, 0, 0)       , matrix_get_value(U, 1, 0),
+        //     matrix_get_value(X, 0, 0)       , matrix_get_value(X, 1, 0), matrix_get_value(X, 2, 0),
+        //     matrix_get_value(Y, 0, 0)       , matrix_get_value(Y, 1, 0));
+
+        printf("%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n", 
+            t, 
+            matrix_get_value(Ref, 0, 0)     , matrix_get_value(Ref, 1, 0),
+            matrix_get_value(Ym, 0, 0)      , matrix_get_value(Ym, 1, 0),
+            matrix_get_value(X, 0, 0)       , matrix_get_value(X, 1, 0), matrix_get_value(X, 2, 0),
+            matrix_get_value(Y, 0, 0)       , matrix_get_value(Y, 1, 0));
+
+        clock_gettime(CLOCK_REALTIME, &ts2);
+        ts3.tv_sec = 0;
+        ts3.tv_nsec = T*1000000 - (ts2.tv_nsec - ts1.tv_nsec);
+        nanosleep(&ts3, &ts3);
+    }
+
+    matrix_free(Ref);
+    matrix_free(Y);
+    matrix_free(Ym);
+    matrix_free(Ymponto);
+    matrix_free(V);
+    matrix_free(U);
+    matrix_free(X);
+
+    return 0;
+}
