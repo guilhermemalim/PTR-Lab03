@@ -8,15 +8,82 @@
 #include <stdio.h>
 
 #include "Matrix.h"
-
 #include "mutexes.h"
-
 #include "Parametros.h"
 
-const double alpha1 = 3;
-const double alpha2 = 3;
+
 const double R = 0.3;
 
+// Contadores
+int contRef = 0;
+int contModeloRef = 0;
+int contControle = 0;
+int contLinearizacao = 0;
+int contRobo = 0;
+
+// Vetores de periodo
+double periodo_Ref[(int) (TEMPO_MAX/TEMPO_REF)] = {0};
+double periodo_ModeloRef[(int) (TEMPO_MAX/TEMPO_MODELO_REF)] = {0};
+double periodo_Controle[(int) (TEMPO_MAX/TEMPO_CONTROLE)] = {0};
+double periodo_Linearizacao[(int) (TEMPO_MAX/TEMPO_LINEARIZACAO)] = {0};
+double periodo_Robo[(int) (TEMPO_MAX/TEMPO_ROBO)] = {0};
+
+double *getPeriodoRef() {
+    return periodo_Ref;
+}
+
+double *getPeriodoModeloRef() {
+    return periodo_ModeloRef;
+}
+
+double *getPeriodoControle() {
+    return periodo_Controle;
+}
+
+double *getPeriodoLinearizacao() {
+    return periodo_Linearizacao;
+}
+
+double *getPeriodoRobo() {
+    return periodo_Robo;
+}
+
+
+// Vetores de Jitters
+double JitterRef[(int) (TEMPO_MAX/TEMPO_REF)] = {0};
+double JitterModeloRef[(int) (TEMPO_MAX/TEMPO_MODELO_REF)] = {0};
+double JitterControle[(int) (TEMPO_MAX/TEMPO_CONTROLE)] = {0};
+double JitterLinearizacao[(int) (TEMPO_MAX/TEMPO_LINEARIZACAO)] = {0};
+double JitterRobo[(int) (TEMPO_MAX/TEMPO_ROBO)] = {0};
+
+double *getJitterRef() {
+    return JitterRef;
+}
+
+double *getJitterModeloRef() {
+    return JitterModeloRef;
+}
+
+double *getJitterControle() {
+    return JitterControle;
+}
+
+double *getJitterLinearizacao() {
+    return JitterLinearizacao;
+}
+
+double *getJitterRobo() {
+    return JitterRobo;
+}
+
+
+double ts2mili(struct timespec ts) {
+    return (double) ts.tv_sec*1000.0 + ts.tv_nsec/1000000.0;
+}
+
+double lat(struct timespec t1, double t2){
+    return ts2mili(t1) - t2;
+}
 
 void calc_ref(Matrix* ref, double t) {
     
@@ -44,25 +111,33 @@ void *ref_thread(void *args) {
     double tm = 0;      //tempo medido
     double T = TEMPO_REF;      //milissegundos
     struct timespec ts1, ts2, ts3={0};
+
+    struct timespec ts0 = {0};
+    clock_gettime(CLOCK_REALTIME, &ts0);
     
     Matrix *ref = matrix_zeros(2,1);
 
     while(t <= TEMPO_MAX) {
         clock_gettime(CLOCK_REALTIME, &ts1);
-        tm = 1000000 * ts1.tv_nsec - tm;
         t = t + T;
 
-
-        mutexes_getRef(ref);
+        // Cálculo de Jitter
+        if (contRef != 0) {
+            periodo_Ref[contRef-1] = lat(ts1, tm);
+            JitterRef[contRef-1] = lat(ts1, tm) - T; // milisegundos
+        }
         
-        calc_ref(ref, t/1000);
+        contRef++;
+        tm = ts2mili(ts1);
+
+        // Cálculo de ref e set de mutexes
+        mutexes_getRef(ref);
+
+        // printf("tm: %lf\n", tm);
+        
+        calc_ref(ref, (tm-ts2mili(ts0))/1000.0);
 
         mutexes_setRef(ref);
-
-        // printf("%.4lf,%.4lf, %.4lf\n",
-        //        t,
-        //        matrix_get_value(ref, 0, 0),     // X_ref
-        //        matrix_get_value(ref, 1, 0));     // Y_ref
 
         clock_gettime(CLOCK_REALTIME, &ts2);
         ts3.tv_sec = 0;
@@ -77,8 +152,8 @@ void *ref_thread(void *args) {
 
 void calc_ymponto(Matrix* ym_ponto, Matrix* ref, Matrix* Ym) {
     
-    VALUES(ym_ponto, 0, 0) = alpha1*(matrix_get_value(ref,0,0)-matrix_get_value(Ym,0,0)); // ymx_ponto = alpha1(X_ref - y_mx)
-    VALUES(ym_ponto, 1, 0) = alpha2*(matrix_get_value(ref,1,0)-matrix_get_value(Ym,1,0)); // ymy_ponto = alpha2(Y_ref) 
+    VALUES(ym_ponto, 0, 0) = ALPHA1*(matrix_get_value(ref,0,0)-matrix_get_value(Ym,0,0)); // ymx_ponto = alpha1(X_ref - y_mx)
+    VALUES(ym_ponto, 1, 0) = ALPHA2*(matrix_get_value(ref,1,0)-matrix_get_value(Ym,1,0)); // ymy_ponto = alpha2(Y_ref) 
 }
 
 
@@ -103,9 +178,18 @@ void *modelo_ref_thread(void *args) {
 
     while(t <= TEMPO_MAX) {
         clock_gettime(CLOCK_REALTIME, &ts1);
-        tm = 1000000 * ts1.tv_nsec - tm;
+
+        // Cálculo de Jitter
+        if (contControle != 0) {
+            periodo_ModeloRef[contModeloRef - 1] = lat(ts1, tm);
+            JitterModeloRef[contModeloRef-1] = lat(ts1, tm) - T; // milisegundos
+        }
+        
+        contModeloRef++;
+        tm = ts2mili(ts1);
         t = t + T;
 
+        // Cálculo de ref e set de mutexes
 
         mutexes_getRef(ref);
         mutexes_getYmdot(Ymponto);
@@ -136,8 +220,8 @@ void *modelo_ref_thread(void *args) {
 
 void calc_v(Matrix *V, Matrix* ym_ponto, Matrix* Ym, Matrix* Y)
 {
-    VALUES(V, 0, 0) = matrix_get_value(ym_ponto, 0, 0) + alpha1 * (matrix_get_value(Ym, 0, 0) - matrix_get_value(Y, 0, 0));
-    VALUES(V, 1, 0) = matrix_get_value(ym_ponto, 1, 0) + alpha2 * (matrix_get_value(Ym, 1, 0) - matrix_get_value(Y, 1, 0));
+    VALUES(V, 0, 0) = matrix_get_value(ym_ponto, 0, 0) + ALPHA1 * (matrix_get_value(Ym, 0, 0) - matrix_get_value(Y, 0, 0));
+    VALUES(V, 1, 0) = matrix_get_value(ym_ponto, 1, 0) + ALPHA2 * (matrix_get_value(Ym, 1, 0) - matrix_get_value(Y, 1, 0));
 }
 
 void *controle_thread(void *args) {
@@ -154,10 +238,18 @@ void *controle_thread(void *args) {
 
     while(t <= TEMPO_MAX) {
         clock_gettime(CLOCK_REALTIME, &ts1);
-        tm = 1000000 * ts1.tv_nsec - tm;
         t = t + T;
 
+        // Cálculo de Jitter
+        if (contControle != 0) {
+            periodo_Controle[contControle - 1] = lat(ts1, tm);
+            JitterControle[contControle-1] = lat(ts1, tm) - T; // milisegundos
+        }
+        
+        contControle++;
+        tm = ts2mili(ts1);
 
+        
         mutexes_getYmdot(Ymponto);
         mutexes_getYm(Ym);
         mutexes_getY(Y);
@@ -216,8 +308,16 @@ void *linearizacao_thread(void *args) {
 
     while(t <= TEMPO_MAX) {
         clock_gettime(CLOCK_REALTIME, &ts1);
-        tm = 1000000 * ts1.tv_nsec - tm;
         t = t + T;
+
+        // Cálculo de Jitter
+        if (contLinearizacao != 0) {
+            periodo_Linearizacao[contLinearizacao-1] = lat(ts1, tm);
+            JitterLinearizacao[contLinearizacao-1] = lat(ts1, tm) - T; // milisegundos
+        }
+
+        contLinearizacao++;
+        tm = ts2mili(ts1);
 
 
         mutexes_getX(X);
@@ -315,8 +415,17 @@ void *robo_thread(void *args) {
 
     while(t <= TEMPO_MAX) {
         clock_gettime(CLOCK_REALTIME, &ts1);
-        tm = 1000000 * ts1.tv_nsec - tm;
         t = t + T;
+
+        // Cálculo de Jitter
+        if (contRobo != 0) {
+            periodo_Robo[contRobo-1] = lat(ts1, tm);
+            JitterRobo[contRobo-1] = lat(ts1, tm) - T; // milisegundos
+        }
+
+        contRobo++;
+        tm = ts2mili(ts1);
+
 
         mutexes_getX(X);
         mutexes_getU(U);
@@ -365,11 +474,12 @@ void *print_thread(void *args) {
 
     while(t <= TEMPO_MAX) {
         clock_gettime(CLOCK_REALTIME, &ts1);
-        tm = 1000000 * ts1.tv_nsec - tm;
+        tm = ts1.tv_nsec/1000000 - tm;
         t = t + T;
 
         mutexes_getRef(Ref);
-        mutexes_getYmdot(Ymponto);
+        if (contRobo != 0)
+            mutexes_getYmdot(Ymponto);
         mutexes_getYm(Ym);
         mutexes_getV(V);
         mutexes_getU(U);
@@ -407,6 +517,21 @@ void *print_thread(void *args) {
         ts3.tv_nsec = T*1000000 - (ts2.tv_nsec - ts1.tv_nsec);
         nanosleep(&ts3, &ts3);
     }
+
+    // void print_vector(double* v, int s) {
+    //     for (int i = 0; i < s + 1; i++) {
+    //         printf("%.4lf ", v[i]);
+    //     }
+    //     printf("\n");
+    // }
+
+    // printf("--- Estatisticas ---\n");
+
+    // print_vector(JitterRef, (int) (TEMPO_MAX / TEMPO_REF));
+    // print_vector(JitterModeloRef, (int) (TEMPO_MAX / TEMPO_MODELO_REF));
+    // print_vector(JitterControle, (int) (TEMPO_MAX / TEMPO_CONTROLE));
+    // print_vector(JitterLinearizacao, (int) (TEMPO_MAX / TEMPO_LINEARIZACAO));
+    // print_vector(JitterRobo, (int) (TEMPO_MAX / TEMPO_ROBO));
 
     matrix_free(Ref);
     matrix_free(Y);
