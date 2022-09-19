@@ -13,64 +13,36 @@
 #include "Matrix.h"
 
 #include "mutexes.h"
-#include "threads.h"
 
-void print_vector(double* v, int s) {
-    for (int i = 0; i < s + 1; i++) {
-        printf("%.4lf ", v[i]);
-    }
-    printf("\n");
-}
+#include "ref.h"
+#include "modelo_ref.h"
+#include "controle.h"
+#include "linearizacao.h"
+#include "robo.h"
+#include "print.h"
 
-void printar_estatisticas(double* arr, int size) {
-    double max = arr[0]; double min  = arr[0];
-    
-    double media = 0;
-    for (int i = 0; i < size; i++) {
-
-        if (arr[i] > max) max = arr[i];
-        if (arr[i] < min) min = arr[i];
-        
-        media += arr[i];
-    }
-    media /= size;
-
-    double var = 0;
-    for (int i = 0; i < size; i++) {
-        var += pow(arr[i] - media, 2);
-    }
-    var /= size;
-
-    double dp = sqrt(var);
-
-    printf("med:%lf,var:%lf,dp:%lf,max:%lf,min:%lf\n", media, var, dp, max, min);
-}
+#include "f_auxiliares.h"
 
 int main() {
 	mutexes_init();
 
-    
-    //Nomeando as Threads
-    pthread_t TRef, TModeloRef, TControle, TLinearizacao, TRobo, Print_mostra;
+    pthread_t thread_ref, thread_modelo_ref, thread_controle, thread_linearizacao, thread_robo, thread_print;
 
-    //Criando as Threads
-    pthread_create(&TRef, NULL, ref_thread, NULL);
-    pthread_create(&TModeloRef, NULL, modelo_ref_thread, NULL);
-    pthread_create(&TControle, NULL, controle_thread, NULL);
-    pthread_create(&TLinearizacao, NULL, linearizacao_thread, NULL); 
-    pthread_create(&TRobo, NULL, robo_thread, NULL);
-    pthread_create(&Print_mostra, NULL, print_thread, NULL);
+    pthread_create(&thread_ref, NULL, ref_thread, NULL);
+    pthread_create(&thread_modelo_ref, NULL, modelo_ref_thread, NULL);
+    pthread_create(&thread_controle, NULL, controle_thread, NULL);
+    pthread_create(&thread_linearizacao, NULL, linearizacao_thread, NULL); 
+    pthread_create(&thread_robo, NULL, robo_thread, NULL);
+    pthread_create(&thread_print, NULL, print_thread, NULL);
 
 
-    //Finalizando as Threads
-    pthread_join(TRef, NULL);
-    pthread_join(TModeloRef, NULL);
-    pthread_join(TControle, NULL);
-    pthread_join(TLinearizacao, NULL);
-    pthread_join(TRobo, NULL);
-    pthread_join(Print_mostra, NULL);
+    pthread_join(thread_ref, NULL);
+    pthread_join(thread_modelo_ref, NULL);
+    pthread_join(thread_controle, NULL);
+    pthread_join(thread_linearizacao, NULL);
+    pthread_join(thread_robo, NULL);
+    pthread_join(thread_print, NULL);
 
-    // printf("fim do programa\n");
 
 	mutexes_destroy();
 
@@ -88,19 +60,19 @@ int main() {
 
     printf("--- Estatisticas ---\n");
 
-    printf("Jitter ref:"); printar_estatisticas(JitterRef, (int) (TEMPO_MAX/TEMPO_REF));
-    printf("Jitter modeloRef:"); printar_estatisticas(JitterModeloRef, (int) (TEMPO_MAX/TEMPO_MODELO_REF));
-    printf("Jitter Controle:"); printar_estatisticas(JitterControle, (int) (TEMPO_MAX/TEMPO_CONTROLE));
-    printf("Jitter Linearizacao:"); printar_estatisticas(JitterLinearizacao, (int) (TEMPO_MAX/TEMPO_LINEARIZACAO));
-    printf("Jitter Robo:"); printar_estatisticas(JitterRobo, (int) (TEMPO_MAX/TEMPO_ROBO));
+    printf("Jitter ref:"); printar_estatisticas(JitterRef, (int) TAM_VETOR_REF);
+    printf("Jitter modeloRef:"); printar_estatisticas(JitterModeloRef, (int) TAM_VETOR_MODELO_REF);
+    printf("Jitter Controle:"); printar_estatisticas(JitterControle, (int) TAM_VETOR_CONTROLE);
+    printf("Jitter Linearizacao:"); printar_estatisticas(JitterLinearizacao, (int) TAM_VETOR_LINEARIZACAO);
+    printf("Jitter Robo:"); printar_estatisticas(JitterRobo, (int) TAM_VETOR_ROBO);
 
     printf("\n");
 
-    printf("Periodo ref:"); printar_estatisticas(PeriodoRef, (int) (TEMPO_MAX/TEMPO_REF));
-    printf("Periodo modeloRef:"); printar_estatisticas(PeriodoModeloRef, (int) (TEMPO_MAX/TEMPO_MODELO_REF));
-    printf("Periodo Controle:"); printar_estatisticas(PeriodoControle, (int) (TEMPO_MAX/TEMPO_CONTROLE));
-    printf("Periodo Linearizacao:"); printar_estatisticas(PeriodoLinearizacao, (int) (TEMPO_MAX/TEMPO_LINEARIZACAO));
-    printf("Periodo Robo:"); printar_estatisticas(PeriodoRobo, (int) (TEMPO_MAX/TEMPO_ROBO));
+    printf("Periodo ref:"); printar_estatisticas(PeriodoRef, (int) TAM_VETOR_REF);
+    printf("Periodo modeloRef:"); printar_estatisticas(PeriodoModeloRef, (int) TAM_VETOR_MODELO_REF);
+    printf("Periodo Controle:"); printar_estatisticas(PeriodoControle, (int) TAM_VETOR_CONTROLE);
+    printf("Periodo Linearizacao:"); printar_estatisticas(PeriodoLinearizacao, (int) TAM_VETOR_LINEARIZACAO);
+    printf("Periodo Robo:"); printar_estatisticas(PeriodoRobo, (int) TAM_VETOR_ROBO);
     
 
     return 0;
