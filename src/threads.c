@@ -478,8 +478,7 @@ void *print_thread(void *args) {
         t = t + T;
 
         mutexes_getRef(Ref);
-        if (contRobo != 0)
-            mutexes_getYmdot(Ymponto);
+        mutexes_getYmdot(Ymponto);
         mutexes_getYm(Ym);
         mutexes_getV(V);
         mutexes_getU(U);
