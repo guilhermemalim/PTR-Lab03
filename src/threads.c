@@ -180,7 +180,7 @@ void *modelo_ref_thread(void *args) {
         clock_gettime(CLOCK_REALTIME, &ts1);
 
         // Cálculo de Jitter
-        if (contControle != 0) {
+        if (contModeloRef != 0) {
             periodo_ModeloRef[contModeloRef - 1] = lat(ts1, tm);
             JitterModeloRef[contModeloRef-1] = lat(ts1, tm) - T; // milisegundos
         }
