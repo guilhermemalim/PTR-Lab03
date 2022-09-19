@@ -6,8 +6,6 @@
 #include <time.h>
 #include <stdio.h>
 
-#include "ref.h"
-
 #include "Matrix.h"
 
 #include "mutexes.h"

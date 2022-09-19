@@ -13,9 +13,6 @@
 
 #include "mutexes.h"
 
-// #include "ref.h"
-// #include "modelo_ref.h"
-
 #include "threads.h"
 
 int main() {

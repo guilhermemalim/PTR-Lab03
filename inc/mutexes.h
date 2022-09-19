@@ -27,6 +27,9 @@ void mutexes_getU(Matrix *u);
 void mutexes_setX(Matrix *x);
 void mutexes_getX(Matrix *x);
 
+void mutexes_setXdot(Matrix *xdot);
+void mutexes_getXdot(Matrix *xdot);
+
 
 #endif
 

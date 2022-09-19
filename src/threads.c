@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "ref.h"
-
 #include "Matrix.h"
 
 #include "mutexes.h"
@@ -329,6 +327,7 @@ void *robo_thread(void *args) {
         calc_x(X, Xdot, Xdot_anterior, 0.03);
         calc_y(Y, X, R);
 
+        mutexes_setXdot(Xdot);
         mutexes_setX(X);
         mutexes_setY(Y);
 
@@ -350,7 +349,7 @@ void *robo_thread(void *args) {
 void *print_thread(void *args) {
     double t = 0;       //tempo calculado
     double tm = 0;      //tempo medido
-    double T = 30;      //milissegundos
+    double T = 300;      //milissegundos
     struct timespec ts1, ts2, ts3 = {0};
     
     Matrix* Ref      = matrix_zeros(2,1);
@@ -360,6 +359,8 @@ void *print_thread(void *args) {
     Matrix* V        = matrix_zeros(2,1);
     Matrix* U        = matrix_zeros(2,1);
     Matrix* X        = matrix_zeros(3,1);
+
+    Matrix* Xdot        = matrix_zeros(3,1);
 
 
     while(t <= TEMPO_MAX) {
@@ -375,8 +376,10 @@ void *print_thread(void *args) {
         mutexes_getX(X);
         mutexes_getY(Y);
 
+        mutexes_getXdot(Xdot);
+
         
-        printf("%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf\n",
+        printf("%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf,%.4lf, %.4lf, %.4lf, %.4lf\n",
                t,
                matrix_get_value(Ref, 0, 0),     // X_ref
                matrix_get_value(Ref, 1, 0),     // Y_ref
@@ -392,7 +395,10 @@ void *print_thread(void *args) {
                matrix_get_value(X, 1, 0),       // X2
                matrix_get_value(X, 2, 0),       // X3
                matrix_get_value(Y, 0, 0),       // Y1
-               matrix_get_value(Y, 1, 0)        // Y2
+               matrix_get_value(Y, 1, 0),       // Y2
+               matrix_get_value(Xdot, 0, 0),    // Xdot1
+               matrix_get_value(Xdot, 1, 0),    // Xdot2
+               matrix_get_value(Xdot, 2, 0)     // Xdot3
         );
 
 

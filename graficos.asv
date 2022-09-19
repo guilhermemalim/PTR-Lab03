@@ -77,8 +77,8 @@ title('Grafico de (Xdotx(t),Xdoty(t))');
 
 %% 
 figure(12);
-plot(Y_x, Y_y);
-title('Grafico de (Yx(t),Yy(t))');
+plot(Y_x = mat(:, 15);
+Y_y = mat(:, 16);
 
 %%
 

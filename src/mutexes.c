@@ -15,6 +15,8 @@ static Matrix* V;
 static Matrix* U;
 static Matrix* X;
 
+static Matrix* Xdot;
+
 static pthread_mutex_t mutexRef     = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexY       = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexYm      = PTHREAD_MUTEX_INITIALIZER;
@@ -22,6 +24,7 @@ static pthread_mutex_t mutexYmponto = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexV       = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexU       = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t mutexX       = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mutexXdot       = PTHREAD_MUTEX_INITIALIZER;
 
 void mutexes_init() {
     Ref      = matrix_zeros(2,1);
@@ -31,6 +34,8 @@ void mutexes_init() {
     V        = matrix_zeros(2,1);
     U        = matrix_zeros(2,1);
     X        = matrix_zeros(3,1);
+
+    Xdot = matrix_zeros(3,1);
 }
 
 void mutexes_destroy() {
@@ -173,4 +178,21 @@ void mutexes_getX(Matrix *x)
         matrix_copy_values(x, X);
     pthread_mutex_unlock(&mutexX);
 }
+
+void mutexes_setXdot(Matrix *xdot)
+{
+    pthread_mutex_lock(&mutexXdot);
+        matrix_copy_values(Xdot, xdot);
+    pthread_mutex_unlock(&mutexXdot);
+}
+
+void mutexes_getXdot(Matrix *xdot)
+{
+    if (xdot == NULL)
+        return;
+    pthread_mutex_lock(&mutexXdot);
+        matrix_copy_values(xdot, Xdot);
+    pthread_mutex_unlock(&mutexXdot);
+}
+
 
