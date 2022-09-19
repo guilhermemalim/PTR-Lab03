@@ -5,7 +5,6 @@ t = mat(:,1);
 ref_x = mat(:, 2);
 ref_y = mat(:, 3);
 
-
 Ymponto_x = mat(:, 4);
 Ymponto_y = mat(:, 5);
 
@@ -25,30 +24,36 @@ X_w = mat(:, 14);
 Y_x = mat(:, 15);
 Y_y = mat(:, 16);
 
+figure(1);
 plot(ref_x, ref_y);
 title('ref_x, ref_y');
 
-figure;
+figure(2);
+plot(Ymponto_x, Ymponto_y);
+title('Grafico de (Xmdot(t),Ymdot(t))');
+
+figure(3);
 plot(Ym_x, Ym_y);
-title('Ymx', 'Ymy');
+title('Grafico de (Xm(t),Ym(t))');
 
-figure;
-plot(X_x, t);
-title('Xc, t');
+figure(4);
+plot(t, X_x);
+title('Grafico de (t,Xc(t))');
 
-figure;
-plot(X_y, t);
-title('Yc, t');
+figure(5);
+plot(t, X_y);
+title('Grafico de (t,Yc(t))');
 
-figure;
-plot(X_w, t);
-title('Wc, t');
+figure(6);
+plot(t, X_w);
+title('Grafico de (t,theta(t))');
 
-figure;
+figure(7);
 plot(X_x, X_y);
-title('Xc, Yc');
+title('Grafico de (Xc(t),Yc(t))');
 
 %%
+
 mat = csvread("out.txt"); 
 x = mat(:,1);
 y2 = mat(:,2);
@@ -56,6 +61,23 @@ y1= mat(:,3);
 plot(y2,y1);
 title('Grafico de (Xc(t),yc(t)) - Taxa de amostragem: 0.5');
 legend('','','') ;
+% 
+% %%
+% 
+% ##mat = csvread("xm_ym.txt"); 
+% ##xm = mat(:,1);
+% ##ym= mat(:,2);
+% ##xmdot = mat(:,3);
+% ##ymdot= mat(:,4);  
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+% 
+
 
 
 

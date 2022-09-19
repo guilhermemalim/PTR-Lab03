@@ -21,7 +21,7 @@ void calc_ref(Matrix* ref, double t);
 void *ref_thread(void *args);
 
 void calc_ymponto(Matrix* ym_ponto, Matrix* ref, Matrix* Ym);
-void calc_ym(Matrix* ym, Matrix* ym_ponto, Matrix* ym_ponto_antigo);
+void calc_ym(Matrix* ym, Matrix* ym_ponto, Matrix* ym_ponto_antigo, double dt);
 
 void *modelo_ref_thread(void *args);
 
@@ -33,8 +33,8 @@ void *linearizacao_thread(void *args);
 
 void calc_xdot(Matrix* Xponto, Matrix* X, Matrix* U);
 
-// avaliar processo de integração
-void calc_x(Matrix* X, Matrix* Xdot);
+// integral de Jorge
+void calc_x(Matrix* X, Matrix* Xdot, Matrix* Xdot_antigo, double dt);
 
 void calc_y(Matrix* Y, Matrix* X, double R);
 

@@ -11,9 +11,8 @@ Makefile:36: pipe: No error
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
- 
 
-# Make data base, printed on Sat Sep 17 20:43:19 2022
+# Make data base, printed on Mon Sep 19 10:56:28 2022
 
 # Variables
 
@@ -44,7 +43,7 @@ MAKE_COMMAND := C:/ProgramData/chocolatey/lib/make/tools/install/bin/make.exe
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_9988_WYFKSGAOEJHJHJUC
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24372_ILHBTKZYRXGWWTTQ
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -92,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 9988
+VSCODE_PID = 24372
 # makefile (from 'Makefile', line 7)
 sources = $(filter-out $(srcdir)/main.c, $(wildcard $(srcdir)/*.c))
 # environment
@@ -150,7 +149,7 @@ CHOCOLATEYLASTPATHUPDATE = 132907958276811674
 # environment
 INTELLIJ IDEA = C:\Program Files\JetBrains\IntelliJ IDEA 2021.3.1\bin;
 # environment
-WT_SESSION = 0e9f5f94-f4f9-4dc3-bc9e-e8f8ce7d9e42
+WT_SESSION = 1291cd7f-b6cd-44ba-81bc-02bd3e2f0a05
 # environment
 LOGONSERVER = \\GUILHERME-ASPIR
 # environment
@@ -232,8 +231,7 @@ ELECTRON_NO_ATTACH_CONSOLE = 1
 # makefile (from 'Makefile', line 14)
 libdir = ./lib
 # default
-.FEATURES := target-specific order-only second-expansion else-if sho 
-rtest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
 # environment
 PROCESSOR_REVISION = 8e0b
 # makefile (from 'Makefile', line 16)
@@ -251,10 +249,10 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 142 Stepping 11, GenuineIntel
 
 # Directories
 
-# src (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake/src, mtime 1663461769): No files, no impossibilities so far.
-# . (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake, mtime 1663461769): 10 files, no impossibilities.
+# src (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake/src, mtime 1663542678): No files, no impossibilities so far.
+# . (key c:/Users/guilh/Desktop/Tudo/UFAM/ptr/Atividade-3-remake, mtime 1663542678): 14 files, no impossibilities.
 
-# 10 files, no impossibilities in 2 directories.
+# 14 files, no impossibilities in 2 directories.
 
 # Implicit Rules
 
@@ -268,7 +266,7 @@ obj/%.o: src/%.c
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-09-17 17:44:05
+#  Last modified 2022-09-18 19:11:18
 #  File has been updated.
 #  Successfully updated.
 
@@ -314,7 +312,7 @@ run:
 #  File does not exist.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 48):
-	@./$(PRJ) "$(ARGS)"
+	@./$(PRJ) "$(ARGS)" > out.txt
 
 .PHONY: clean run
 #  Implicit rule search has not been done.
@@ -329,12 +327,12 @@ run:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 19 / storage = 126 B / avg = 6 B
-# current buf: size = 8174 B / used = 126 B / count = 19 / avg = 6 B
+# strcache buffers: 1 (0) / strings = 23 / storage = 169 B / avg = 7 B
+# current buf: size = 8174 B / used = 169 B / count = 23 / avg = 7 B
 
-# strcache performance: lookups = 32 / hit rate = 40%
+# strcache performance: lookups = 36 / hit rate = 36%
 # hash-table stats:
-# Load=19/8192=0%, Rehash=0, Collisions=0/32=0%
-# Finished Make data base on Sat Sep 17 20:43:19 2022
+# Load=23/8192=0%, Rehash=0, Collisions=0/36=0%
+# Finished Make data base on Mon Sep 19 10:56:28 2022
 
  

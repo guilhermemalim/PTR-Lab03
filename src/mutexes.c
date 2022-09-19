@@ -56,6 +56,14 @@ void mutexes_setRef(Matrix* ref) {
         // Ref = matrix_copy(ref);
         matrix_copy_values(Ref, ref);
         // Ref = ref;
+
+    //     for (int i = 0; i < Ref->nlins; i++)
+    // {
+    //     for (int j = 0; j < Ref->ncols; j++)
+    //     {
+    //         VALUES(Ref, i, j) = VALUES(ref, i, j);
+    //     }
+    // }
     pthread_mutex_unlock(&mutexRef);
 }
 
@@ -63,6 +71,13 @@ void mutexes_getRef(Matrix *ref) {
     if(ref == NULL) return;
     pthread_mutex_lock(&mutexRef);
         matrix_copy_values(ref, Ref);
+    //     for (int i = 0; i < Ref->nlins; i++)
+    // {
+    //     for (int j = 0; j < Ref->nlins; j++)
+    //     {
+    //         VALUES(ref, i, j) = VALUES(Ref, i, j);
+    //     }
+    // }
     pthread_mutex_unlock(&mutexRef);
 }
 
