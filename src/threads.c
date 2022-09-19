@@ -458,7 +458,7 @@ void *robo_thread(void *args) {
 void *print_thread(void *args) {
     double t = 0;       //tempo calculado
     double tm = 0;      //tempo medido
-    double T = 300;      //milissegundos
+    double T = 100;      //milissegundos
     struct timespec ts1, ts2, ts3 = {0};
     
     Matrix* Ref      = matrix_zeros(2,1);
